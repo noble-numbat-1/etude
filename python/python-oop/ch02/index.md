@@ -16,7 +16,7 @@ Constructor method:
 
 __new__()
 
-initializer method:
+Initializer method:
 
 __init__()
 
@@ -32,6 +32,47 @@ class Point:
         self.y = y
     def calc_distance(self, other: "Point") -> float:
         return math.hypot(self.x - other.x, self.y - other.y)
+```
+
+Representation:
+
+__repr__(): is used to create a string representation of the object in the form of Python expression to rebuild the object.
+
+```python
+class Sample:
+    def __init__(
+        self,
+        sepal_length: float,
+        sepal_width: float,
+        petal_length: float,
+        petal_width: float,
+        species: Optional[str] = None,
+    ) -> None:
+        self.sepal_length = sepal_length
+        self.sepal_width = sepal_width
+        self.petal_length = petal_length
+        self.petal_width = petal_width
+        self.species = species
+        self.classification: Optional[str] = None
+    def __repr__(self) -> str:
+        if self.species is None:
+            known_unknown = "UnknownSample"
+        else:
+            known_unknown = "KnownSample"
+        if self.classification is None:
+            classification = ""
+        else:
+            classification = f", {self.classification}"
+        return (
+            f"{known_unknown}("
+            f"sepal_length={self.sepal_length}, "
+            f"sepal_width={self.sepal_width}, "
+            f"petal_length={self.petal_length}, "
+            f"petal_width={self.petal_width}, "
+            f"species={self.species!r}"
+            f"{classification}"
+            f")"
+        )
 ```
 
 ## Modules and Packages
@@ -84,4 +125,29 @@ eg:
 from .database import db
 ```
 
-Stop At: Who can access my data?
+## Third-party Libraries
+
+List of library can be found at [Python Package Index: PyPI](http://pypi.python.org/)
+
+- venv: **Virtual Environment**
+
+```bash
+$ cd project_directory
+$ python -m venv env
+
+$ source env/bin/activate
+# on Linux or macOs
+
+$ env/Scripts/activate.bat
+# on Windows
+
+$ deactivate
+# to deactivate the environment
+```
+
+There are several third-party tools for virtual environment:
+
+- virtualenv
+- pyenv
+- virtualenvwrapper
+- conda (if working with data scrience, it can install more complex package)
