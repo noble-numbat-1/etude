@@ -76,3 +76,28 @@ $ echo $MYVAR
 # list all the shell variables
 $ printenv | less
 ```
+
+### The shell's aliases
+
+```bash
+# view alias
+$ alias ll
+
+# create alias
+$ alias aliasName='command'
+```
+
+### The Shell Connection
+
+- tty: teletypewriter
+- pts: pseudo terminal slave
+- pty: pseudo-terminal device
+
+### Some Command
+
+- type: indicate the type of command built-in or external
+- chvt: changing virtual terminal
+- `$ man man`
+- `$ help help`
+
+## The Linux File system
