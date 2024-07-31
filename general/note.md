@@ -1,5 +1,11 @@
 # NOTE
 
+## GENERAL DEV AND LINK
+
+- [Tecmint: Learn Linux Ins and Outs](https://www.tecmint.com/)
+- [Tembo: Manage Postgres Service](https://tembo.io/)
+- [Tembo: Posgres Guide: Backup](https://tembo.io/docs/getting-started/postgres_guides/how-to-backup-and-restore-a-postgres-database)
+
 ## Random Unique ID
 
 - TWITTER: Snowflake: ID
@@ -32,3 +38,14 @@
 - DB: BCNF(Boyce Codd Normal Form)
 - JSTL stands for JSP Standard Tag Library
 - OGNL [Apache Common OGNL](https://commons.apache.org/dormant/commons-ognl/)
+- [FP-TS](https://github.com/gcanti/fp-ts): typed functional programming in TypeScript
+
+## PYTHON
+
+### PYTHON VIRTUALENV MANAGEMENT
+
+- [Pipenv](https://pipenv.pypa.io/en/latest/)
+- [Poetry](https://python-poetry.org/)
+- [Hatch](https://hatch.pypa.io/latest/): Python project manager
+- [PDM](https://pdm-project.org/en/latest/): Python package and dependency manager
+- [Rye](https://rye.astral.sh/): Python project and package menagement solution
