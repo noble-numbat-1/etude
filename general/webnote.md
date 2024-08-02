@@ -25,3 +25,10 @@
 - XMPP
 - WebRTC
 - RPC
+
+## AUTHENTICATION AND AUTHORIZATION
+
+- [OSO](https://www.osohq.com/): authorization as a service.
+- [Casbin](https://casbin.org/): authorization lib for ACL, RBAC, ABAC
+- [Casdoor](https://casdoor.org/): UI-first IAM
+- [Lucia](https://github.com/lucia-auth/lucia): auth lib for server
