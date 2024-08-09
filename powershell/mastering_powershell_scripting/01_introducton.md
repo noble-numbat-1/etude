@@ -35,20 +35,26 @@ $ Get-Command -Verb Get, Set -Noun *Firewall*
 
 Alias
 
+Alias created in one session are not persisted.
+
 ```powershell
 # List all alias
 $ Get-Alias
 
 # Find command behind an alias
-$ Get-Alias dir
+# eg: Get-Alias dir
+$ Get-Alias <alias>
 
 # Find alias for the command
-$ Get-Alias -Definition Get-ChildItem
+# eg: Get-Alias -Definition Get-ChildItem
+$ Get-Alias -Definition <cmdlet>
 
 # Create alias
-$ New-Alias grep -Value Select-String
+# eg: New-Alias grep -Value Select-String
+$ New-Alias <alias> -Value <cmdlet>
 
 # Remove alias: use Remove-Alias or Remove-Item
-$ Remove-Alias grep
-$ Remove-Item alias:\grep
+# eg: Remove-Alias grep or Remove-Item alias:\grep
+$ Remove-Alias <alias>
+$ Remove-Item alias:\<alias>
 ```
