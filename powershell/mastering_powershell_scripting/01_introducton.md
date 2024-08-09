@@ -58,3 +58,104 @@ $ New-Alias <alias> -Value <cmdlet>
 $ Remove-Alias <alias>
 $ Remove-Item alias:\<alias>
 ```
+
+## Confirm & WhatIf
+
+### Confirm
+
+`ConfirmPreference` has four possible values:
+
+- High
+- Medium
+- Low
+- None
+
+`ConfirmImpact` uses the same four values.
+
+```powershell
+# Finding ConfirmImpact
+$ [System.Management.Automation.CommandMetadata](Get-Command <cmdlet>)
+
+# Change/set ConfirmPreference
+$ $ConfirmPreference = 'Low'
+```
+
+### WhatIf
+
+`WhatIf` is used when testing a command.
+
+`WhatIfPreference` default value is **false**.
+
+> [!CAUTION]
+> WhatIf support is defined by a command author which may not be handled correctly.
+
+```powershell
+# If preference variable is set to true,
+# all commands that support WhatIf will act as if it set explicitly
+$ $WhatIfPreference = $true
+```
+
+> [!NOTE]
+> WhatIf takes precedence over Confirm.
+
+## Introduction to Providers
+
+More info check: `Get-Help about_Providers`
+
+```powershell
+# List current available providers
+$ Get-PSProvider
+
+# Access items within provider
+# eg: Get-ChildItem Alias
+# eg: Get-ChildItem FileSystem::C:\Windows
+$ Get-ChildItem <provider>
+
+# Access child items
+# eg: Get-Item Variable::true
+$ Get-Item <provider>::<childItem>
+
+# List drives
+$ Get-PSDrive
+```
+
+## Introductino to Splatting
+
+Splatting is a way of defining the parameters of a command before calling it. The Individual parameters are written in `hashtable (@{})`, and the `@` symbol used to read the content of hashtable as parameters.
+
+```powershell
+$getProcess = @{
+  Name = 'explorer'
+}
+Get-Process @getProcess
+
+# Same as
+$ Get-Process -Name explorer
+```
+
+Example:
+
+```powershell
+# Normal without splatting
+$ $taskAction = New-ScheduledTaskAction -Execute pwsh.exe -Argument 'Write-Host "Hello world"'
+$ $taskTrigger = New-ScheduledTaskTrigger -Daily -At '00:00:00'
+$ Register-ScheduledTask -TaskName 'TaskName' -Action $taskAction -Trigger $taskTrigger -RunLevel 'Limited' -Description 'This line is too long to read'
+
+# With splatting
+$ $newTaskAction = @{
+  Execute = ''
+  Argument = 'Write-Host "Hello world"'
+}
+$ $newTaskTrigger = @{
+  Daily = $true
+  At = '00:00:00'
+}
+$ $registerTask = @{
+  TaskName = 'TaskName'
+  Action = New-ScheduledTaskAction @newTaskAction
+  Trigger = New-ScheduledTaskTrigger @newTaskTrigger
+  RunLevel = 'Limited'
+  Description = 'Splatting is easy to read'
+}
+$ Register-ScheduledTask @registerTask
+```
