@@ -123,18 +123,113 @@ Variable scope was stacked on top of the other in the order of call stack. `Get-
 Example:
 
 ```powershell
-function first {
+$ function first {
   $name = 'first'
   second
 }
-function second {
+$ function second {
   $name = 'second'
   third
 }
-function third {
+$ function third {
   $name = 'third'
   "name value in first {0}" -f @(Get-Variable -Name name -Scope 2 -ValueOnly)
   "name value in second {0}" -f @(Get-Variable -Name name -Scope 1 -ValueOnly)
 }
-first
+$ first
 ```
+
+### Private Variables
+
+A private variable is hidden from child scopes which can be either created using `New-Variable` or `Private` scope modifier.
+
+```powershell
+# Create private variable
+$ New-Variable -Name <name> -Option Private
+$ $private:<name> = <value>
+```
+
+> [!NOTE]
+> It is still possible to get the value of private variable using numeric scope with `Get-Variable` command.
+
+## Arrays
+
+Array Creation
+
+```powershell
+# Creation by assignment using array sub-expression operator
+$ $array = @()
+$ foreach ($value in 1..5) {
+  $array += [PSCustomObject]@{ Value = $value }
+}
+
+# Or
+$ $array = foreach ($value in 1..5) { [PSCustomObject]@{ Value = $value } }
+
+# Create using `new` method with a specific size
+$ $objArray = [Object[]]::new(10)
+$ $byteArray = [byte[]]::new(10)
+
+# Directly assign a value or using array sub-exprression
+$ $valArray = "Hello", "world", "Hello me"
+$ $valArray = @("Hello", "world", "Hello me")
+$ $valArray = "Hello world", 2, 3.1314, (Get-Date)
+```
+
+Arrays with type
+
+```powershell
+# Create array with a specific type
+$ [ulong[]]
+$ [xml[]]
+
+# Set type for array variable
+# $null will convert to 0 and 3.14 will convert to 3
+$ [int[]]$nb = 1, 2, $null, 3.14
+```
+
+> [!NOTE]
+> When type is set for array variable, PowerShell attempts to convert value to that type, or raise an error if the value cannot be converted.
+
+Adding elements to an array
+
+```powershell
+# Add a single item
+$ $array += 'new value'
+$ $array = $array + 'new value'
+
+# Join two array
+$ $array1 = 1, 2, 3
+$ $array2 = 4, 5, 6
+$ $array3 = $array1 + $array2
+
+# Using array sub-expression
+$ $array1 = 1, 2, 3
+$ $array2 = @((Get-Date), 'Hello world', $array1)
+```
+
+## List and ArrayList
+
+```powershell
+# Create a list
+$ $list = [System.Collections.Generic.List[object]]::new()
+
+# Add item to list
+$ $list.Add('Hello')
+
+# Add range
+$ $array1 = 1, 2, 3
+$ $list.AddRange($array1)
+
+# Alternative to generic List, ArrayList
+$ $arrayList = [System.Collections.ArrayList]::new()
+
+# Create List from Assignment
+$ [System.Collections.Generic.List[object]]$processes = Get-Process
+$ [System.Collections.Generic.List[object]]$list = foreach ($value in 1..5) { [PSCustomObject]@{ Value = $value } }
+```
+
+> [!TIP]
+> `Get-Member` can be used to view available methods.
+>
+> eg: `Get-Member -InputObject $list`
