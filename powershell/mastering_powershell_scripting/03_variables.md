@@ -233,3 +233,191 @@ $ [System.Collections.Generic.List[object]]$list = foreach ($value in 1..5) { [P
 > `Get-Member` can be used to view available methods.
 >
 > eg: `Get-Member -InputObject $list`
+
+Selecting elements from array
+
+```powershell
+# Using index
+# eg: $array[0], $array[-1]
+$ $array[<index>]
+
+# Select range of elements
+# eg: $array[1..5]
+# eg: $array[-1..-5]
+$ $array[<range>]
+
+# Select multiple range
+# First part of the index must be an array for addition operation to succeed
+$ $array[0..2 + 6..8 + -1]
+
+# When the first part is not an array, convert to an array first
+# or use array sub-expression
+$ $array[@(0) + 6..8; -1]
+$ $array[0..0, 6..8; -1]
+$ $array[@(0; 6..8; -1)]
+
+# Find element index
+# $array.IndexOf(5)
+$ $array.IndexOf(<element>)
+
+# Using comparison operator
+$ $array -gt 5
+$ $array -lt 3
+$ $array -gt 3 -lt 7
+
+# Using filter expression
+$ $array | Where-Object { $_ -lt 3 -or $_ -gt 7 }
+
+# Using `Where` method
+$ $array.Where{ $_ -lt 3 -or $_ -gt 7 }
+```
+
+> [!TIP]
+> The `Where` method is faster than the `Where-Object`
+
+Changing element values in an array
+
+```powershell
+# Assigning to a specific index
+$ $array[2] = 100
+
+# eg:
+$ for ($i; $i -lt $array.Count; $i++) {
+  $array[$i] = 9
+}
+```
+
+Removing elements
+
+Elements cannot be removed from a fixed-size array except by recreating the array.
+
+```powershell
+# Removing element from a list
+$ $list = [System.Collections.Generic.List[string]]@('a', 'b', 'c')
+$ $list.Remove('a')
+
+# Removing from a specific index
+$ $list.RemoveAt(0)
+
+# Fixed-size array: remove by recreating a new array
+$ $newArray = $array[0..48] + $array[50..99]
+```
+
+Filling variables from arrays
+
+```powershell
+# Assigning an array to a comma-separated list
+$ $i, $j = 1, 2
+$ $firstName, $lastName = -split "First Last"
+$ $firstName, $lastName = "First Last".Split()
+
+# Remaining elements will be assigned to the last variable
+$ $i, $j, $k = 1, 2, 3, 4
+
+# Variables will be null when elements are less than variables
+$ $i, $j, $k = 1, 2
+
+# Assign $null to discard
+$ $firstName, $null, $lastName = -split "First A. Last"
+```
+
+Multi-dimensional and jagged arrays
+
+```powershell
+# Multi-dimensional array
+$ $arrayOfArray = @(@(1, 2, 3), @(4, 5, 6))
+
+# Access by index
+$ $arrayOfArray[0][1]
+```
+
+> [!CAUTION]
+> Ensure that the comma following each of the nested arrays is in place, otherwise the arrays will be flattened.
+
+## Hashtables
+
+A hashtable is an associative array.
+
+Creating a hashtable
+
+```powershell
+# Creating an empty hashtable
+$ $hashtable = @{}
+
+# Creating with specific keys and values
+$ $hashtable = @{ Key1 = "Value1"; Key2 = "Value2" }
+$ $hashtable = @{
+  Key1 = "Value1"
+  Key2 = "Value2"
+}
+```
+
+Adding, Changing, and Removing keys
+
+```powershell
+# Assign value to a key. If the key is already exist, the value will be overwritten
+$ $hashtable['Key'] = 'Value'
+$ $hashtable.Key = 'Value'
+
+# Using `Add` method. Error if key is already exist
+$ $hashtable.Add('Key1', 'Error')
+
+# Contains check if key exist. Implemented by hashtable
+$ $hashtable.Contains('Key')
+
+# ContainsKey check if key exist. Implemented by all dictionary types
+$ $hashtable.ContainsKey('Key')
+
+# Remove key
+$ $hashtable.Remove('Key')
+```
+
+Using a hashtable to filter
+
+```powershell
+# eg: slow approach
+$ $left = 1..10000 | ForEach-Object { [PSCustomObject]@{ UserID = "User$_" } }
+$ $right = 6400..20000 | ForEach-Object { [PSCustomObject]@{ UserID = "User$_" } }
+$ $left | Where-Object UserID -in $right.UserID
+# Measure
+$ Measure-Command { $left | Where-Object UserID -in $right.UserID }
+
+# eg: using hashtable
+$ $right | ForEach-Object { $hashtable[$_.UserID] = $_ }
+$ $left | Where-Object { $hashtable.Contains($_.UserID) }
+
+# eg: using hashset
+$ $hashset = [System.Collections.Generic.HashSet[string]]::new([string[]]$right.UserID, [StringComparer]::OrdinalIgnoreCase)
+$ $left | Where-Object { $hashset.Contains($_.UserID) }
+```
+
+> [!CAUTION]
+> Hashtables are implicitly case-insensitive in PowerShell
+
+Enumerating a Hashtable
+
+```powershell
+# Using `GetEnumerator` method, get key/value pairs
+$ $hashtable.GetEnumerator()
+
+# Get all keys
+$ $hashtable.Keys
+
+# Get all values
+$ $hashtable.Values
+
+# If key were name `Keys` or `Values`, it will be hidden behind tha hashtable data
+# Use the `get_Keys` private method instead
+$ $hashtable.get_Keys()g
+```
+
+`OrderedDictionary` preserves the order in which keys were added.
+
+```powershell
+# Create an order dictionary
+$ $ordered = [Ordered]@{
+  One = 1
+  Two = 2
+  Three = 3
+}
+```
