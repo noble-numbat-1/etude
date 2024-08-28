@@ -112,3 +112,64 @@ $ 1..5 | ForEach-Object -Parallel { ($using:val).Add($_, $_) }
 # eg: Get the Path property of each item
 $ Get-Process | ForEach-Object -MemberName Path
 ```
+
+`Where-Object` command is used to filter the output from commands.
+
+```powershell
+# eg: Filter processes stated after 9 am
+$ Get-Process | Where-Object StartTime -GT (Get-Date 9:00:00)
+
+# eg: Using FilterScript param
+$ Get-Service | Where-Object { $_.StartType -eq 'Manual' -and $_.Status -eq 'Running' }
+```
+
+## Selecting and Sorting
+
+`Select-Object` is used to select a subset of properties, to change properties, to add new properties, or to limit the number objects returned.
+
+```powershell
+# eg: Select all properies
+$ Get-Process -Id $PID | Select-Object *
+
+# eg: Limit property
+$ Get-Process | Select-Object -Property Name, Id
+
+# eg: Limit using wildcard
+$ Get-Process | Select-Object -Property Name, *Memory*
+
+# eg: Exclude properties
+$ Get-Process | Select-Object -Property * -ExcludeProperty *Memory*
+
+# eg: Limit by First or Last
+$ Get-ChildItem C:\ -Recurse | Select-Object -First 2
+$ Get-ChildItem C:\ | Select-Object -Last 3
+
+# Other param: -Skip, -Index, -SkipIndex
+```
+
+Add new Properties or rename existing properties:
+
+```powershell
+# Format
+@{ Name = 'PropertyName'; Expression = { 'PropertyValue' } }
+@{ Label = 'PropertyName'; Expression = { 'PropertyValue' } }
+@{ n = 'PropertyName'; e = { 'PropertyValue' } }
+@{ l = 'PropertyName'; e = { 'PropertyValue' } }
+```
+
+Example:
+
+```powershell
+# Rename Id to ProcessId, both are the same
+$ Get-Process | Select-Object @{ Name = 'ProcessId'; Expression = 'Id' }
+$ Get-Process | Select-Object @{ Name = 'ProcessId'; Expression = { $_.Id } }
+
+# Enclose in a list: @()
+$ Get-Process | Select-Object -Property @(
+  'Name'
+  @{Name = 'ProcessId'; Expression = 'ID' }
+  @{Name = 'FileOwner'; Expression = { (Get-Acl $_.Path).Owner }}
+)
+```
+
+`Sort-Object` is used to perform both simple and complex sorting.
