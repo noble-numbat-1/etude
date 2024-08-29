@@ -170,6 +170,98 @@ $ Get-Process | Select-Object -Property @(
   @{Name = 'ProcessId'; Expression = 'ID' }
   @{Name = 'FileOwner'; Expression = { (Get-Acl $_.Path).Owner }}
 )
+
+# Use `ExpandPropery` param to map the property out
+# eg: extract the string value from Name props
+$ Get-Process | Select-Object -First 5 -ExpandProperty Name
+# eg: extract all VersionInfo's props and merge with FullName and Length
+$ Get-ChildItem $env:SystemRoot\*.dll | Select-Object FullName, Length -ExpandProperty VersionInfo | Format-List
+
+# Filter unique value
+$ 1, 1, 1, 3, 5, 2, 2, 4 | Select-Object -Unique
+$ 1, 1, 1, 3, 5, 2, 2, 4 | Sort-Object | Get-Unique
+
+# Filter unique with properties
+$ $val = 1, 2, 3, 1, 2, 3 | ForEach-Object { [PSCustomObject]@{ Number = $_ } }
+$ $val | Select-Object -Property * -Unique
 ```
 
-`Sort-Object` is used to perform both simple and complex sorting.
+`Sort-Object` is used to perform both simple and complex sorting and by default in ascending order.
+
+```powershell
+# Sort number
+$ 5, 4, 3, 2, 1 | Sort-Object
+
+# String are sort irrespective of uppercase or lowercase
+$ 'ccc', 'BBB', 'aaa' | Sort-Object
+
+# Sort on property
+$ Get-Process | Sort-Object -Property Id
+
+# Sort on multiple property: LastWriteTime and then Name
+$ Get-ChildItem C:\Windows\System32 | Sort-Object LastWriteTime, Name
+
+# Sort with script block
+$ $examResults = @(
+  [PSCustomObject]@{ Exam = 'Music'; Result = 'N/A'  Mark = 0 }
+  [PSCustomObject]@{ Exam = 'History'; Result = 'Fail'; Mark = 23 }
+  [PSCustomObject]@{ Exam = 'Biology'; Result = 'Pass'; Mark = 78 }
+  [PSCustomObject]@{ Exam = 'Physics'; Result = 'Pass'; Mark = 86 }
+  [PSCustomObject]@{ Exam = 'Maths'; Result = 'Pass'; Mark = 92 }
+)
+$ $examResults | Sort-Object { switch ($_.Result) { 'Pass' { 1 }; 'Fail' { 2 }; 'N/A' { 3 } } }
+
+# Multiple sort: mix script block
+$ $examResults | Sort-Object { switch ($_.Result) { 'Pass' { 1 }; 'Fail' { 2 }; 'N/A' { 3 } } }, Mark
+
+# Sort Descending
+$ 3, 5, 4, 2, 1 | Sort-Object -Descending
+
+# Multiple script block using @()
+$  $examResults | Sort-Object @(
+  { switch ($_.Result) { 'Pass' { 1 }; 'Fail' { 2 }; 'N/A' { 3 } } }
+  @{ Expression = { $_.Mark }; Descending = $true }
+)
+```
+
+`Sort-Object` can also be used to sort with unique the result.
+
+```powershell
+# Unique sort in Sort-Object is not case-sensitive
+$ 'dog', 'dog', 'cat', 'cat', 'mouse', 'Mouse' | Sort-Object -Unique
+```
+
+> [!CAUTION]
+> The Unique parameter of `Sort-Object` is not case-sensitive.
+
+## Grouping and Measuring
+
+`Group-Object` command is used to group object together under a single property name or expression. By default, it returns collection of objects.
+
+```powershell
+# Create GroupInfo: Name, Count, Group
+$ 6, 7, 7, 8, 8, 8 | Group-Object
+
+# `NoElement` param remove Group property
+$ 6, 7, 7, 8, 8, 8 | Group-Object -NoElement
+
+# Group by property: Name
+$ Get-ChildItem C:\Windows\assembly\ -Filter *.dll -File -Recurse | Group-Object Name -NoElement
+
+# Group by multiple property: Name and Length
+$ Get-ChildItem C:\Windows\assembly\ -Filter *.dll -File -Recurse | Group-Object Name, Length -NoElement
+
+# Custom group: group by domain
+$ 'one@one.example', 'two@one.example', 'three@two.example' | Group-Object { ($_ -split '@')[1] }
+
+# Return hashtable instead of collection
+# Using AsString the ensure the key is String
+# If AsString is omit, the key to access must match the type
+$ $val = @([IPAddress]'10.0.0.1', [IPAddress]'10.0.0.2', [IPAddress]'10.0.0.1')
+$ $hashtable = $val | Group-Object -AsHashtable -AsString
+```
+
+> [!CAUTION]
+> By default, `Group-Object` is not case-sensitive. Using `CaseSensitive` paramter to make is case-sensitive.
+
+`Measure-Object` command is used to apply mathematical operation(count, average, sum, etc) on objects. It also allows characters, words or lines to be counted in text fields.
