@@ -265,3 +265,80 @@ $ $hashtable = $val | Group-Object -AsHashtable -AsString
 > By default, `Group-Object` is not case-sensitive. Using `CaseSensitive` paramter to make is case-sensitive.
 
 `Measure-Object` command is used to apply mathematical operation(count, average, sum, etc) on objects. It also allows characters, words or lines to be counted in text fields.
+
+```powershell
+# Count number of items
+$ 1, 5, 9, 79 | Measure-Object
+
+# Other measure property
+$ 1, 5, 9, 79 | Measure-Object -Average -Maximum -Minimum -Sum -StandardDeviation
+
+# Measure a specific property
+$ Get-Process | Measure-Object WorkingSet -Average
+
+# Measuring String
+$ Get-Content c:\windows\WindowsUpdate.log | Measure-Object -Line -Word -Character
+```
+
+## Comparing
+
+`Compare-Object` command is used to compare two collections of objects. If either of the compare value is null, an error will be displayed. If both values are equal, it does not return anything by default.
+
+```powershell
+# The compare values are equal, nothing return
+$ Compare-Object -ReferenceObject 1, 2 -DifferenceObject 1, 2
+
+# The compare values are not equal
+$ Compare-Object -ReferenceObject 1, 2, 3, 4 -DifferenceObject 1, 2
+
+# Other params
+$ $params = @{ ReferenceObject = 1, 2, 3,4; DifferenceObject = 1, 2, 5; IncludeEqual = $true; ExcludeDifferent = $true; PassThru = $true }
+$ Compare-Object @params
+
+# Compare by object properties
+# eg: compare file that has the same name and same size
+$ $params = @{
+    ReferenceObject = Get-ChildItem C:\Windows\System32 -File
+    DifferenceObject = Get-ChildItem C:\Windows\SysWOW64 -File
+    Property = 'Name', 'Length'
+    IncludeEqual = $true
+    ExcludeDifferent = $true
+  }
+```
+
+## Importing, Exporting, and Converting
+
+`Export-Csv` command is used to write data from objects to textfile. By default, it's using UTF8 encoding and overwrites any file when using the same name.
+
+```powershell
+# Write csv to file, overwrite any existing file
+$ Get-Process | Export-Csv processes.csv
+
+# Write csv, append to existing file
+# Csv header must be the same, otherwise an error will occur
+$ Get-Process -Id $PID | Select-Object Name, Id | Export-Csv process.csv -Append
+
+# When append, any extra header will be ignore, if any
+# eg: here in the second command, Id will be ignore when append
+$ Get-Process pwsh | Select-Object Name | Export-Csv process.csv
+$ Get-Process explorer | Select-Object Name, Id | Export-Csv process.csv -Append
+
+# Other parma:
+# - IncludeTypeInformation: add .NET type info
+# - NoTypeInformation: remove .NET type info
+```
+
+`ConvertTo-Csv` command is used to write data from objects to command output as csv.
+
+```powershell
+# Write csv to command output
+$ Get-Process pwsh | Select-Object Name, Id | ConvertTo-Csv
+
+# Convert value before write to csv
+$ [PSCustomObject]@{ Name = "Numbers"; Value = 1, 2, 3, 4, 5 } | ForEach-Object { $_.Value = $_.Value -join ', '; $_ } | ConvertTo-Csv
+```
+
+`Import-Csv`
+
+Export-CliXml and Import-CliXml
+Tee-Object
