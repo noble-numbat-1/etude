@@ -308,6 +308,8 @@ $ $params = @{
 
 ## Importing, Exporting, and Converting
 
+### CSV File
+
 `Export-Csv` command is used to write data from objects to textfile. By default, it's using UTF8 encoding and overwrites any file when using the same name.
 
 ```powershell
@@ -338,7 +340,87 @@ $ Get-Process pwsh | Select-Object Name, Id | ConvertTo-Csv
 $ [PSCustomObject]@{ Name = "Numbers"; Value = 1, 2, 3, 4, 5 } | ForEach-Object { $_.Value = $_.Value -join ', '; $_ } | ConvertTo-Csv
 ```
 
-`Import-Csv`
+`Import-Csv` expects the input to have a header row, comma-delimited, and use ASCII file encoding. Data imported will be formatted as string.
 
-Export-CliXml and Import-CliXml
-Tee-Object
+```powershell
+# Read csv file
+$ Import-Csv .\process.csv
+
+# Tab as delimiter
+$ Import-Csv .\process.csv -Delimiter `t
+```
+
+`ConvertFrom-Csv` is used to read CSV content from the standard input and create custom object.
+
+```powershell
+# Read Csv from standard input
+$ "powershell, 404" | ConvertFrom-Csv -Header Name, Id
+
+# Using array of strings or string with linebreaks
+$ "Name, Id
+  Powershell, 404" | ConvertFrom-Csv
+```
+
+### Clixml
+
+`Export-Clixml` is used to create representations of objects in XML files.
+
+`Import-Clixml` is used to create back the objects in XML files.
+
+```powershell
+# Write to cli-xml file
+$ [PSCustomObject]@{ Integer = 1; Decimal = 2.3; String = 'Hello world' } | Export-Clixml .\object.xml
+
+# Read from cli-xml file
+$ $object = Import-Clixml .\object.xml
+
+# eg: Create and save credential to xml file
+$ Get-Credential | Export-Clixml -Path secret.xml
+
+# eg: Read back the credential from xml file
+$ $credential = Import-Clixml -Path secret.xml
+$ $credential.GetNetworkCredential().Password
+```
+
+### Export output to variable/file
+
+`Tee-Object` command is used to send output to two place at the same time. It is used to write output to a console and a file or variable.
+
+```powershell
+# eg: Write to standard output and variable
+$ Get-Process | Tee-Object -Variable processes
+
+# eg: Write to output and file, file content is the same at what is display
+$ Get-Process | Tee-Object -FilePath .\processes.txt
+```
+
+## Formatting
+
+`Format-Table` command is used to request table format of an object.
+
+```powershell
+# Format with only a specify property
+$ Get-Process -Id $PID | Format-Table ProcessName, Path
+
+# Format with as many property as it can fit in console
+$ Get-Process | Format-Table *
+
+# Format with custom property
+$  Get-Process | Format-Table -Property @( 'Name'; @{ Name = 'Started'; Expression = { $_.StartTime } } )
+
+# Format string and custom width
+$ Get-Process | Format-Table -Property @(
+  @{ Expression = 'Name'; Width = 30 }
+  @{ Expression = 'StartTime'; FormatString = '0:HH:mm' }
+)
+```
+
+`Format-List` command is used to generate a vertical view.
+
+```powershell
+# Format output as list
+$ Get-Process -Id $PID | Format-List
+
+# Format string
+$ Get-Process | Format-List -Property @('Name', @{ Expression = 'StartTime'; FormatString = '{0:HH:mm}' })
+```
