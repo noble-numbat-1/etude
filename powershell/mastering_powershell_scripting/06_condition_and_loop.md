@@ -89,3 +89,73 @@ $ switch [-regex|-wildcard] [-casesensitive] -File <Name> {
   <condition> { <statements> }
 }
 ```
+
+**Wildcard and Regex** parameters is used when matching strings.
+
+```powershell
+# Using wildcard param
+# ? => any character
+# * => any string of zero or more characters
+# [] => ranges defined in square brackets
+$ switch -Wildcard ('cat') {
+  'c*' { Write-Host 'c*' }
+  '???' { Write-Host '???' }
+  '*t' { Write-Host '*t' }
+  '*[aeiou]' { Write-Host '*[aeiou]' }
+}
+
+# Using Regex param
+$ switch -Regex ('cat') {
+  '^c' { Write-Host '^c' }
+  '^.{3}$' { Write-Host '^.{3}$' }
+  't$' { Write-Host 't$' }
+}
+```
+
+**Script block case** can be used in place of the direct comparisons. It is executed and the result determines whether the case is matched.
+
+```powershell
+# eg: script block case
+$ switch (Get-Date) {
+  { $_ -is [DateTime] } { Write-Host 'This is DateTime' }
+  { $_.Year -ge 2020 } { Write-Host 'It is 2020 or later' }
+}
+```
+
+> [!CAUTION]
+> Switch statement turns each of the enum case into a literal string. Possible solutions are
+>
+> - Use the name of the enum value
+> - Enclose enum in bracket
+
+```powershell
+# Enum in switch statement's case will be converted to literal string
+# eg: The following enum case will not match
+$ switch ((Get-Date).DayOfWeek) {
+  [DayOfWeek]::Monday    { 'Monday' }
+  [DayOfWeek]::Tuesday   { 'Tuesday' }
+  [DayOfWeek]::Wednesday { 'Wednesday' }
+  [DayOfWeek]::Thursday  { 'Thursday' }
+  [DayOfWeek]::Friday    { 'Friday' }
+  [DayOfWeek]::Saturday  { 'Saturday' }
+  [DayOfWeek]::Sunday    { 'Sunday' }
+  default { 'It is not a week day at all' }
+}
+
+# Use the name of the enum value
+$ switch ((Get-Date).DayOfWeek) {
+  'Monday' { 'Monday' }
+  'Tuesday' { 'Tuesday' }
+}
+
+# Enclose in bracket
+$ switch ((Get-Date).DayOfWeek) {
+  ([DayOfWeek]::Monday) { 'Monday' }
+  ([DayOfWeek]::Tuesday) { 'Tuesday' }
+}
+
+# Static property in case statement
+$ switch ((Get-Date).Date) {
+  ([DateTime]::Today) { 'It is still today' }
+}
+```
