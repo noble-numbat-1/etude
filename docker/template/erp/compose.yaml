@@ -1,0 +1,58 @@
+name: erp
+
+services:
+  pgdb:
+    container_name: erp-pgdb
+    image: postgres:12.5
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./config/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - erp-pgdb:/var/lib/postgresql/data
+    networks:
+      - erp-network
+  mongo:
+    container_name: erp-mongo
+    image: mongo:7.0.12
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=roott
+    volumes:
+      - erp-mongo:/data/db
+    networks:
+      - erp-network
+  minio:
+    container_name: erp-minio
+    image: minio/minio:RELEASE.2021-03-04T00-53-13Z
+    restart: always
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2m30s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "9000:9000"
+    environment:
+      - MINIO_ACCESS_KEY=erp
+      - MINIO_SECRET_KEY=secret
+    volumes:
+      - erp-minio:/data
+
+volumes:
+  erp-pgdb:
+    external: true
+  erp-mongo:
+    external: true
+  erp-minio:
+    external: true
+
+networks:
+  erp-network:
