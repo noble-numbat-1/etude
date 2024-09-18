@@ -278,3 +278,101 @@ while (-not (Test-Path $env:TEMP\test.txt -PathType Leaf)) {
 ```
 
 ### Loops, break, and continue
+
+```powershell
+# Generate an array of random number, and find the first which is greater than 10
+$ $randomNumbers = Get-Random -Count 30 -Minimum 1 -Maximum 30
+$ foreach ($number in $randomNumbers) {
+  if ($number -gt 10) {
+    break
+  }
+}
+$ $number
+```
+
+> [!CAUTION]
+> `break` can be used outside of loop, eg: function, which will break any loop in the outer scoop. The same apply to `continue`.
+
+### Loops and labels
+
+A loop can be given a label which may be used with `break` and `continue` to define a specific point loop to act on. The label is written before the loop keyword (for, while, do, or foreach) and is preceded by a colon.
+
+```powershell
+# Give loop a label
+$ :TheLabel foreach ($value in $items) {
+  ...
+}
+
+# Or place on top
+$ :TheLabel
+$ foreach ($value in $items) {
+  ...
+}
+```
+
+Example:
+
+```powershell
+:outerLoop for ($i = 1; $i -le 5; $i++) {
+  :innerLoop foreach ($value in 1..5) {
+    Write-Host "$i :: $value"
+    if ($value -eq $i) {
+      continue outerLoop
+    }
+  }
+}
+```
+
+### Loops, queues, and stacks
+
+`queues` and `stacks` can be used with loops to perform operations that behave like recursion.
+
+Example: Using queues
+
+```powershell
+# Create example directory to traverse
+$ New-Item Project\A\B\C -ItemType Directory
+$ New-Item Project\A\B\Large\Tree -ItemType Directory
+$ New-Item Project\D\Large\Tree -ItemType Directory
+
+# Loops/traverse through child items
+$ $path = Get-Item Project
+$ $queue = [System.Collections.Generic.Queue[object]]$path
+$ $output = while ($queue.Count) {
+    $current = $queue.Dequeue()
+    $current
+    foreach ($child in Get-ChildItem -Path $current -Directory) {
+      $queue.Enqueue($child)
+    }
+  }
+$ $output.Name
+
+# Traverse and ignore **Large** directory
+$ $path = Get-Item Project
+$ $queue = [System.Collections.Generic.Queue[object]]$path
+$ $output = while ($queue.Count) {
+    $current = $queue.Dequeue()
+    $current
+    foreach ($child in Get-ChildItem -Path $current -Directory) {
+      if ($current.Name -eq 'Large') { continue }
+      $queue.Enqueue($child)
+    }
+  }
+$ $output.Name
+```
+
+Example: Using stacks
+
+```powershell
+$ $path = Get-Item Project
+$ $stack = [System.Collections.Generic.Stack[object]]$path
+$ $output = while ($stack.Count) {
+    $current = $stack.Pop()
+    $current
+    foreach ($child in Get-ChildItem -Path $current -Directory) {
+      if ($current.Name -eq 'Large') { continue }
+      $stack.Push($child)
+    }
+  }
+$ $output.Name
+```
