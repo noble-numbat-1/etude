@@ -13,7 +13,7 @@
     - easier to add new physical or virtual datacenters to the cluster later
 - Data versioning
   - Cassandra uses mutation **timestamp** versioning.
-  - provided either from a client clock or the coordinator node’s clock.
+  - provided either from a client clock or the coordinator node's clock.
   - each column in a row resolves concurrent mutations according to last-write-wins conflict resolution.
   - data in each replica will eventually consistency.
 - Dataset partitioning by hashing
@@ -22,15 +22,68 @@
   - Replica with the latest timestamped win.
   - In case has the same timestamped, the "delete" win, then the update with lexically larger value win.
 
-Data Modeling
+DATA MODELING:
 
 - The data access patterns and queries are used to design the database tables.
 - Denormalize data:
   - All entities involved in a query should be in the same table.
   - A single entity may be included in multiple tables, data is duplicated
-  - No join between tables.
+  - No join between tables (foreign keys or relational integrity).
 - Query should keep a minimum the number of partitions read as data store across diff node.
 - A partition key is generated from the first field of a primary key.
+- Defining application queries before ???
+
+KEY DEFNIITION:
+
+- primary key
+  - The first field of primary key is partition key
+  - The partition key can be formed by grouping multiple fields as the first component of primary key
+  - The remaining fields is clustering key
+- partition key
+  - use to partition the data
+- clustering key
+  - use to sort data within a partition
+
+Example:
+
+```cql
+CREATE TABLE t (
+  id1 int,
+  id2 int,
+  c1 text,
+  c2 text
+  k int,
+  v text,
+  PRIMARY KEY ((id1,id2),c1,c2)
+);
+```
+
+---
+
+Design
+
+- No Joins: either do the work on the client side or create a denormalized second table that represents the join results (prefer).
+- No referential integrity: mean no foreign keys to reference the primary key in other table.
+- Wide partition pattern vs time series pattern
+- Keyspace: to group table in order to separate concerns
+
+LOGICAL DATA MODELING
+PHYSICAL DATA MODELING
+  Breaking Up Large Partitions (add column, bucketing)
+
+- materialized view ???
+
+### CQL
+
+Example: Schema
+
+```cql
+-- Ref: doc: Data Modeling -> Designing Schema
+CREATE TABLE magazine_name (id int PRIMARY KEY, name text, publicationFrequency text)
+
+CREATE TABLE magazine_publisher (publisher text,id int,name text, publicationFrequency text,
+PRIMARY KEY (publisher, id)) WITH CLUSTERING ORDER BY (id DESC)
+```
 
 ### DropWizard
 
